@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아케이드 잼 - 트로피 센터</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        cyber: {
+                            dark: '#0B0F19',
+                            card: '#161F33',
+                            accent: '#00F0FF',
+                            neonPink: '#FF007F',
+                            neonYellow: '#FFE600',
+                            neonPurple: '#A100FF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .arcade-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Custom Glowing & Glass Effects */
+        .glow-accent {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+        }
+        .glow-pink {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+        }
+        .glow-yellow {
+            box-shadow: 0 0 15px rgba(255, 230, 0, 0.4);
+        }
+        .glow-purple {
+            box-shadow: 0 0 15px rgba(161, 0, 255, 0.4);
+        }
+        .glass-panel {
+            background: rgba(22, 31, 51, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .trophy-card-locked {
+            filter: grayscale(0.85) opacity(0.6);
+        }
+        /* Animations */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,240,255,0.6)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 20px rgba(255,0,127,0.8)); }
+        }
+        .animate-trophy-unlock {
+            animation: pulseGlow 1.8s infinite ease-in-out;
+        }
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1E293B;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00F0FF;
+        }
+    </style>
+</head>
+<body class="bg-cyber-dark text-slate-100 min-h-screen flex flex-col justify-between transition-colors duration-300">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="showSection('games')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-pink-500 flex items-center justify-center text-white text-xl shadow-lg glow-accent">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black arcade-font tracking-wider bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400 bg-clip-text text-transparent">
+                        CYBER ARCADE
+                    </h1>
+                    <p class="text-xs text-slate-400 font-semibold">트렌디 미니게임 & 트로피 Vault</p>
+                </div>
+            </div>
+
+            <!-- Stats & Navigation Links -->
+            <div class="flex items-center gap-2 sm:gap-4">
+                <div class="hidden sm:flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                    <i class="fa-solid fa-star text-amber-400"></i>
+                    <span class="text-xs text-slate-400">누적 총점:</span>
+                    <span id="headerTotalScore" class="font-bold text-cyan-400 arcade-font">0</span>
+                </div>
+
+                <button onclick="showSection('games')" id="navGamesBtn" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 hover:bg-cyan-500/30">
+                    <i class="fa-solid fa-gamepad mr-1"></i> 게임 목록
+                </button>
+
+                <button onclick="showSection('trophies')" id="navTrophiesBtn" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <span>트로피 보관함</span>
+                    <span id="headerTrophyBadge" class="ml-1 bg-amber-500/20 text-amber-300 text-xs px-1.5 py-0.5 rounded-full font-bold">0/0</span>
+                </button>
+
+                <!-- Sound Toggle -->
+                <button onclick="toggleAudio()" id="audioBtn" class="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-cyan-400 transition-colors">
+                    <i class="fa-solid fa-volume-high" id="audioIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- SECTION 1: GAME HUB -->
+        <section id="gamesSection" class="space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-cyan-400"></i> 아케이드 스테이지
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">원하는 게임을 선택하여 플레이하고 목표 점수를 달성해 트로피를 획득하세요!</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="resetAllProgress()" class="text-xs text-rose-400 hover:text-rose-300 transition-colors bg-rose-500/10 px-3 py-2 rounded-lg border border-rose-500/20 flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> 데이터 초기화
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- Game 1: 랜덤 키보드 -->
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 hover:border-cyan-500/50 transition-all hover:scale-[1.02] flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-keyboard"></i>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                                최고점: <span id="highScore-g1" class="text-cyan-400 font-bold">0</span>
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-100 group-hover:text-cyan-400 transition-colors">1. 키보드 스피드 타자</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                            화면에 출력되는 영문 알파벳(A-Z), 숫자(0-9), 스페이스바를 제한 시간 20초 안에 정확히 타이핑하세요!
+                        </p>
+                    </div>
+                    <button onclick="openGameModal(1)" class="mt-5 w-full py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-semibold rounded-xl border border-cyan-500/40 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i> 게임 시작
+                    </button>
+                </div>
+
+                <!-- Game 2: 클래식 스네이크 -->
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 hover:border-emerald-500/50 transition-all hover:scale-[1.02] flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-staff-snake"></i>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                                최고점: <span id="highScore-g2" class="text-emerald-400 font-bold">0</span>
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-100 group-hover:text-emerald-400 transition-colors">2. 클래식 스네이크</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                            방향키 또는 화면 버튼으로 뱀을 조종해 먹이를 드세요. 벽이나 자신의 몸에 부딪히지 않도록 주의하세요!
+                        </p>
+                    </div>
+                    <button onclick="openGameModal(2)" class="mt-5 w-full py-2.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-semibold rounded-xl border border-emerald-500/40 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i> 게임 시작
+                    </button>
+                </div>
+
+                <!-- Game 3: 움직이는 공 개수 세기 -->
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 hover:border-amber-500/50 transition-all hover:scale-[1.02] flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-circle-dot"></i>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                                최고점: <span id="highScore-g3" class="text-amber-400 font-bold">0</span>
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-100 group-hover:text-amber-400 transition-colors">3. 바운스 볼 카운터</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                            화면 안에서 통통 튀어다니는 공들의 정확한 개수를 관찰하여 맞춰보세요. 라운드가 올라갈수록 속도와 수가 늘어납니다!
+                        </p>
+                    </div>
+                    <button onclick="openGameModal(3)" class="mt-5 w-full py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-semibold rounded-xl border border-amber-500/40 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i> 게임 시작
+                    </button>
+                </div>
+
+                <!-- Game 4: 메모리 카드 뒤집기 -->
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 hover:border-purple-500/50 transition-all hover:scale-[1.02] flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-clone"></i>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                                최고점: <span id="highScore-g4" class="text-purple-400 font-bold">0</span>
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-100 group-hover:text-purple-400 transition-colors">4. 메모리 매칭 카드</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                            카드 뒤에 숨겨진 똑같은 그림 아이콘을 찾아 짝을 맞추세요. 적은 시도와 빠른 속도가 높은 점수를 얻습니다.
+                        </p>
+                    </div>
+                    <button onclick="openGameModal(4)" class="mt-5 w-full py-2.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 font-semibold rounded-xl border border-purple-500/40 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i> 게임 시작
+                    </button>
+                </div>
+
+                <!-- Game 5: 반응속도 테스트 -->
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 hover:border-pink-500/50 transition-all hover:scale-[1.02] flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-stopwatch"></i>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                                최고점: <span id="highScore-g5" class="text-pink-400 font-bold">0</span>
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-100 group-hover:text-pink-400 transition-colors">5. 빛의 반응속도 테스트</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                            화면 색상이 초록색으로 변하는 순간 신속하게 클릭하세요! 너무 빨리 누르면 부정출발 처리가 됩니다.
+                        </p>
+                    </div>
+                    <button onclick="openGameModal(5)" class="mt-5 w-full py-2.5 bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 font-semibold rounded-xl border border-pink-500/40 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i> 게임 시작
+                    </button>
+                </div>
+
+                <!-- Game 6: 두더지 잡기 -->
+                <div class="glass-panel rounded-2xl p-5 border border-slate-800 hover:border-yellow-500/50 transition-all hover:scale-[1.02] flex flex-col justify-between group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="w-12 h-12 rounded-xl bg-yellow-500/20 border border-yellow-500/40 flex items-center justify-center text-yellow-400 text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-hammer"></i>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                                최고점: <span id="highScore-g6" class="text-yellow-400 font-bold">0</span>
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-100 group-hover:text-yellow-400 transition-colors">6. 신나는 두더지 잡기</h3>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                            구멍에서 튀어나오는 두더지를 터치하거나 클릭하여 캐치하세요! 제한 시간 30초간 빠르게 누를수록 고득점!
+                        </p>
+                    </div>
+                    <button onclick="openGameModal(6)" class="mt-5 w-full py-2.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 font-semibold rounded-xl border border-yellow-500/40 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i> 게임 시작
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- SECTION 2: UNIFIED TROPHY VAULT (트로피 보관함) -->
+        <section id="trophiesSection" class="hidden space-y-6">
+            <!-- Top Banner -->
+            <div class="glass-panel rounded-2xl p-6 border border-slate-800 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 text-slate-800/40 text-9xl pointer-events-none">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div>
+                        <span class="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-full text-xs font-semibold">
+                            <i class="fa-solid fa-vault mr-1"></i> 통합 트로피 센터
+                        </span>
+                        <h2 class="text-3xl font-black mt-2 text-white flex items-center gap-2">
+                            트로피 보관함 (Trophy Vault)
+                        </h2>
+                        <p class="text-sm text-slate-400 mt-1 max-w-xl">
+                            게임 플레이를 통해 달성한 업적과 마스터 트로피들이 모이는 보관함입니다. 조건에 도전하여 영예로운 명예 트로피를 획득하세요!
+                        </p>
+                    </div>
+
+                    <!-- Overall Completion Card -->
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-700 min-w-[240px]">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs text-slate-400 font-medium">전체 달성률</span>
+                            <span id="trophyCompletionPercent" class="text-xs font-bold text-cyan-400 arcade-font">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden mb-3">
+                            <div id="trophyProgressBar" class="bg-gradient-to-r from-cyan-400 to-amber-400 h-full w-0 transition-all duration-500"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-mono">
+                            <span class="text-slate-400">획득 수:</span>
+                            <span class="text-amber-300 font-bold"><span id="trophyUnlockedCount">0</span> / <span id="trophyTotalCount">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="flex border-b border-slate-800 gap-2 pb-2 overflow-x-auto">
+                <button onclick="filterTrophies('all')" id="tab-all" class="trophy-tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                    <i class="fa-solid fa-border-all mr-1.5"></i> 전체 트로피
+                </button>
+                <button onclick="filterTrophies('total')" id="tab-total" class="trophy-tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700">
+                    <i class="fa-solid fa-crown mr-1.5 text-amber-400"></i> 총점 업적
+                </button>
+                <button onclick="filterTrophies('mastery')" id="tab-mastery" class="trophy-tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700">
+                    <i class="fa-solid fa-gamepad mr-1.5 text-purple-400"></i> 게임별 마스터
+                </button>
+            </div>
+
+            <!-- Trophies Grid -->
+            <div id="trophiesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Dynamic Content Generated by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="glass-panel border-t border-slate-800 py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            &copy; 2026 CYBER ARCADE SUITE &bull; 트로피 보관함 시스템 통합 완료
+        </div>
+    </footer>
+
+
+    <!-- GAME PLAY MODAL -->
+    <div id="gameModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl relative">
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+                <div class="flex items-center gap-3">
+                    <div id="gameModalIcon" class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <div>
+                        <h3 id="gameModalTitle" class="text-base font-bold text-white">게임 타이틀</h3>
+                        <p id="gameModalSub" class="text-xs text-slate-400">아케이드 미니게임</p>
+                    </div>
+                </div>
+                <button onclick="closeGameModal()" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content / Game Area -->
+            <div class="p-4 flex-grow overflow-y-auto flex flex-col items-center justify-center min-h-[360px]" id="gameArea">
+                <!-- Inject Game Dynamic HTML -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- TROPHY UNLOCKED NOTIFICATION MODAL -->
+    <div id="trophyUnlockModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel bg-gradient-to-b from-slate-900 via-slate-900 to-cyan-950/40 border border-amber-500/50 rounded-3xl p-8 max-w-md w-full text-center relative shadow-2xl animate-trophy-unlock">
+            <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-slate-950 text-5xl mb-4 shadow-xl glow-yellow">
+                <i class="fa-solid fa-trophy" id="unlockedModalIcon"></i>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold uppercase tracking-widest">
+                TROPHY UNLOCKED!
+            </span>
+            <h3 id="unlockedTrophyTitle" class="text-2xl font-black text-white mt-3">트로피 이름</h3>
+            <p id="unlockedTrophyCategory" class="text-xs text-cyan-400 font-medium mt-1">총점 업적</p>
+            <p id="unlockedTrophyDesc" class="text-sm text-slate-300 mt-3 bg-slate-950/50 p-3 rounded-xl border border-slate-800">
+                업적 설명
+            </p>
+
+            <button onclick="closeTrophyUnlockModal()" class="mt-6 w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black rounded-xl shadow-lg transition-all">
+                확인 및 계속하기
+            </button>
+        </div>
+    </div>
+
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /* --------------------------------------------------
+         * 1. AUDIO SYNTHESIZER (Web Audio API)
+         * -------------------------------------------------- */
+        let audioCtx = null;
+        let isAudioMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (isAudioMuted) return;
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'correct') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'wrong') {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.setValueAtTime(120, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'trophy') {
+                    // Fanfare synth
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    notes.forEach((freq, idx) => {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+                        gain.gain.setValueAtTime(0.25, now + idx * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.start(now + idx * 0.1);
+                        osc.stop(now + idx * 0.1 + 0.3);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio error:", e);
+            }
+        }
+
+        function toggleAudio() {
+            isAudioMuted = !isAudioMuted;
+            const icon = document.getElementById('audioIcon');
+            if (isAudioMuted) {
+                icon.className = 'fa-solid fa-volume-xmark text-rose-400';
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-slate-300';
+                playSound('click');
+            }
+        }
+
+        /* --------------------------------------------------
+         * 2. TROPHY DEFINITIONS & DATA STORAGE
+         * -------------------------------------------------- */
+        const TROPHY_DEFINITIONS = [
+            // 총점 업적 (Total Score Milestones)
+            {
+                id: 'tot_1',
+                category: 'total',
+                title: '아케이드 입문자',
+                rarity: 'Common',
+                rarityBg: 'bg-slate-700 text-slate-200',
+                icon: 'fa-certificate',
+                desc: '누적 총점 500점 달성하기',
+                reqType: 'totalScore',
+                reqVal: 500
+            },
+            {
+                id: 'tot_2',
+                category: 'total',
+                title: '실력파 게이머',
+                rarity: 'Rare',
+                rarityBg: 'bg-blue-600 text-white',
+                icon: 'fa-award',
+                desc: '누적 총점 2,000점 달성하기',
+                reqType: 'totalScore',
+                reqVal: 2000
+            },
+            {
+                id: 'tot_3',
+                category: 'total',
+                title: '하이스코어 헌터',
+                rarity: 'Epic',
+                rarityBg: 'bg-purple-600 text-white',
+                icon: 'fa-medal',
+                desc: '누적 총점 5,000점 달성하기',
+                reqType: 'totalScore',
+                reqVal: 5000
+            },
+            {
+                id: 'tot_4',
+                category: 'total',
+                title: '아케이드 챔피언',
+                rarity: 'Legendary',
+                rarityBg: 'bg-amber-500 text-slate-950 font-bold',
+                icon: 'fa-trophy',
+                desc: '누적 총점 10,000점 달성하기',
+                reqType: 'totalScore',
+                reqVal: 10000
+            },
+            {
+                id: 'tot_5',
+                category: 'total',
+                title: '전설의 게이머',
+                rarity: 'Mythic',
+                rarityBg: 'bg-gradient-to-r from-pink-500 to-yellow-400 text-slate-950 font-black',
+                icon: 'fa-crown',
+                desc: '누적 총점 20,000점 달성하기',
+                reqType: 'totalScore',
+                reqVal: 20000
+            },
+
+            // 게임별 마스터 (Per-Game Mastery)
+            {
+                id: 'g1_m',
+                category: 'mastery',
+                title: '속사포 타자의 신',
+                rarity: 'Rare',
+                rarityBg: 'bg-cyan-600 text-white',
+                icon: 'fa-keyboard',
+                desc: '키보드 스피드 타자 200점 이상 달성',
+                reqType: 'gameScore',
+                gameId: 1,
+                reqVal: 200
+            },
+            {
+                id: 'g2_m',
+                category: 'mastery',
+                title: '스네이크 마스터',
+                rarity: 'Rare',
+                rarityBg: 'bg-emerald-600 text-white',
+                icon: 'fa-staff-snake',
+                desc: '클래식 스네이크 150점 이상 달성',
+                reqType: 'gameScore',
+                gameId: 2,
+                reqVal: 150
+            },
+            {
+                id: 'g3_m',
+                category: 'mastery',
+                title: '신의 눈동자',
+                rarity: 'Epic',
+                rarityBg: 'bg-amber-600 text-white',
+                icon: 'fa-eye',
+                desc: '바운스 볼 카운터 300점 이상 달성',
+                reqType: 'gameScore',
+                gameId: 3,
+                reqVal: 300
+            },
+            {
+                id: 'g4_m',
+                category: 'mastery',
+                title: '절대 기억력',
+                rarity: 'Epic',
+                rarityBg: 'bg-purple-600 text-white',
+                icon: 'fa-brain',
+                desc: '메모리 매칭 카드 250점 이상 달성',
+                reqType: 'gameScore',
+                gameId: 4,
+                reqVal: 250
+            },
+            {
+                id: 'g5_m',
+                category: 'mastery',
+                title: '광속의 반사신경',
+                rarity: 'Legendary',
+                rarityBg: 'bg-pink-600 text-white',
+                icon: 'fa-bolt',
+                desc: '반응속도 테스트 300점 이상 달성',
+                reqType: 'gameScore',
+                gameId: 5,
+                reqVal: 300
+            },
+            {
+                id: 'g6_m',
+                category: 'mastery',
+                title: '두더지 사냥꾼',
+                rarity: 'Epic',
+                rarityBg: 'bg-yellow-600 text-slate-950 font-bold',
+                icon: 'fa-hammer',
+                desc: '두더지 잡기 250점 이상 달성',
+                reqType: 'gameScore',
+                gameId: 6,
+                reqVal: 250
+            }
+        ];
+
+        // State Store
+        let appState = {
+            totalScore: 0,
+            highScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
+            unlockedTrophies: []
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('cyber_arcade_trophy_state');
+            if (saved) {
+                try {
+                    appState = JSON.parse(saved);
+                } catch(e) { console.error(e); }
+            }
+            updateHeaderStats();
+            updateGameListScores();
+        }
+
+        function saveState() {
+            localStorage.setItem('cyber_arcade_trophy_state', JSON.stringify(appState));
+            updateHeaderStats();
+            updateGameListScores();
+        }
+
+        function updateHeaderStats() {
+            document.getElementById('headerTotalScore').innerText = appState.totalScore.toLocaleString();
+            const unlockedCount = appState.unlockedTrophies.length;
+            const totalCount = TROPHY_DEFINITIONS.length;
+            document.getElementById('headerTrophyBadge').innerText = `${unlockedCount}/${totalCount}`;
+        }
+
+        function updateGameListScores() {
+            for (let i = 1; i <= 6; i++) {
+                const elem = document.getElementById(`highScore-g${i}`);
+                if (elem) {
+                    elem.innerText = (appState.highScores[i] || 0).toLocaleString();
+                }
+            }
+        }
+
+        function resetAllProgress() {
+            if (confirm('정말로 모든 게임 점수와 트로피 데이터를 초기화하시겠습니까?')) {
+                appState = {
+                    totalScore: 0,
+                    highScores: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 },
+                    unlockedTrophies: []
+                };
+                saveState();
+                renderTrophiesGrid('all');
+                playSound('click');
+            }
+        }
+
+        /* --------------------------------------------------
+         * 3. TROPHY CHECKING & NOTIFICATION MECHANICS
+         * -------------------------------------------------- */
+        function checkTrophyUnlocks() {
+            let newlyUnlocked = [];
+
+            TROPHY_DEFINITIONS.forEach(trophy => {
+                if (!appState.unlockedTrophies.includes(trophy.id)) {
+                    let isMet = false;
+                    if (trophy.reqType === 'totalScore') {
+                        if (appState.totalScore >= trophy.reqVal) isMet = true;
+                    } else if (trophy.reqType === 'gameScore') {
+                        if ((appState.highScores[trophy.gameId] || 0) >= trophy.reqVal) isMet = true;
+                    }
+
+                    if (isMet) {
+                        appState.unlockedTrophies.push(trophy.id);
+                        newlyUnlocked.push(trophy);
+                    }
+                }
+            });
+
+            if (newlyUnlocked.length > 0) {
+                saveState();
+                // Pop notification for the first newly unlocked
+                showTrophyUnlockModal(newlyUnlocked[0]);
+            }
+        }
+
+        function showTrophyUnlockModal(trophy) {
+            document.getElementById('unlockedTrophyTitle').innerText = trophy.title;
+            document.getElementById('unlockedTrophyCategory').innerText = trophy.category === 'total' ? '총점 업적 트로피' : '게임 마스터 트로피';
+            document.getElementById('unlockedTrophyDesc').innerText = trophy.desc;
+            document.getElementById('unlockedModalIcon').className = `fa-solid ${trophy.icon}`;
+            document.getElementById('trophyUnlockModal').classList.remove('hidden');
+            playSound('trophy');
+        }
+
+        function closeTrophyUnlockModal() {
+            document.getElementById('trophyUnlockModal').classList.add('hidden');
+            playSound('click');
+        }
+
+        /* --------------------------------------------------
+         * 4. UI RENDER & SECTION NAVIGATION
+         * -------------------------------------------------- */
+        let currentFilter = 'all';
+
+        function showSection(section) {
+            playSound('click');
+            document.getElementById('gamesSection').classList.add('hidden');
+            document.getElementById('trophiesSection').classList.add('hidden');
+
+            document.getElementById('navGamesBtn').className = "px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700";
+            document.getElementById('navTrophiesBtn').className = "px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 flex items-center gap-1.5";
+
+            if (section === 'games') {
+                document.getElementById('gamesSection').classList.remove('hidden');
+                document.getElementById('navGamesBtn').className = "px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 hover:bg-cyan-500/30";
+            } else if (section === 'trophies') {
+                document.getElementById('trophiesSection').classList.remove('hidden');
+                document.getElementById('navTrophiesBtn').className = "px-3 py-1.5 rounded-lg text-sm font-medium transition-all bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30 flex items-center gap-1.5";
+                renderTrophiesGrid(currentFilter);
+            }
+        }
+
+        function filterTrophies(filter) {
+            playSound('click');
+            currentFilter = filter;
+            const tabs = ['all', 'total', 'mastery'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === filter) {
+                    btn.className = "trophy-tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-cyan-500/20 text-cyan-300 border border-cyan-500/40";
+                } else {
+                    btn.className = "trophy-tab-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700";
+                }
+            });
+            renderTrophiesGrid(filter);
+        }
+
+        function renderTrophiesGrid(filter) {
+            const grid = document.getElementById('trophiesGrid');
+            grid.innerHTML = '';
+
+            const filtered = TROPHY_DEFINITIONS.filter(t => filter === 'all' || t.category === filter);
+
+            const totalCount = TROPHY_DEFINITIONS.length;
+            const unlockedCount = appState.unlockedTrophies.length;
+            const percentage = Math.round((unlockedCount / totalCount) * 100);
+
+            document.getElementById('trophyUnlockedCount').innerText = unlockedCount;
+            document.getElementById('trophyTotalCount').innerText = totalCount;
+            document.getElementById('trophyCompletionPercent').innerText = `${percentage}%`;
+            document.getElementById('trophyProgressBar').style.width = `${percentage}%`;
+
+            filtered.forEach(trophy => {
+                const isUnlocked = appState.unlockedTrophies.includes(trophy.id);
+                
+                // Progress calculation
+                let currentVal = 0;
+                if (trophy.reqType === 'totalScore') currentVal = appState.totalScore;
+                else if (trophy.reqType === 'gameScore') currentVal = appState.highScores[trophy.gameId] || 0;
+
+                const progressPct = Math.min(100, Math.round((currentVal / trophy.reqVal) * 100));
+
+                const cardHtml = `
+                    <div class="glass-panel rounded-2xl p-5 border border-slate-800 flex flex-col justify-between relative transition-all ${isUnlocked ? 'border-amber-500/40 bg-slate-900/80 shadow-lg' : 'trophy-card-locked'}">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="w-12 h-12 rounded-xl ${isUnlocked ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 glow-yellow' : 'bg-slate-800 text-slate-500 border border-slate-700'} flex items-center justify-center text-2xl">
+                                    <i class="fa-solid ${isUnlocked ? trophy.icon : 'fa-lock'}"></i>
+                                </div>
+                                <span class="text-xs px-2 py-0.5 rounded-full ${trophy.rarityBg}">
+                                    ${trophy.rarity}
+                                </span>
+                            </div>
+
+                            <h4 class="font-bold text-lg text-white">${trophy.title}</h4>
+                            <p class="text-xs text-slate-400 mt-1">${trophy.desc}</p>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-800/80">
+                            <div class="flex justify-between items-center text-xs mb-1.5 font-mono">
+                                <span class="text-slate-400">${isUnlocked ? '달성 완료' : '진행도'}</span>
+                                <span class="${isUnlocked ? 'text-emerald-400 font-bold' : 'text-slate-300'}">${currentVal.toLocaleString()} / ${trophy.reqVal.toLocaleString()} (${progressPct}%)</span>
+                            </div>
+                            <div class="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+                                <div class="h-full ${isUnlocked ? 'bg-emerald-400' : 'bg-cyan-500'} transition-all duration-300" style="width: ${progressPct}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        /* --------------------------------------------------
+         * 5. GAME ENGINE & MINI GAMES IMPLEMENTATION
+         * -------------------------------------------------- */
+        let activeGameTimer = null;
+        let currentGameId = null;
+
+        function openGameModal(gameId) {
+            playSound('click');
+            currentGameId = gameId;
+            const modal = document.getElementById('gameModal');
+            const titleElem = document.getElementById('gameModalTitle');
+            const subElem = document.getElementById('gameModalSub');
+            const iconElem = document.getElementById('gameModalIcon');
+            const area = document.getElementById('gameArea');
+
+            const titles = [
+                "",
+                "키보드 스피드 타자",
+                "클래식 스네이크",
+                "바운스 볼 카운터",
+                "메모리 매칭 카드",
+                "빛의 반응속도 테스트",
+                "신나는 두더지 잡기"
+            ];
+
+            const icons = [
+                "",
+                "fa-keyboard", "fa-staff-snake", "fa-circle-dot",
+                "fa-clone", "fa-stopwatch", "fa-hammer"
+            ];
+
+            titleElem.innerText = titles[gameId];
+            subElem.innerText = `최고 기록: ${appState.highScores[gameId] || 0}점`;
+            iconElem.innerHTML = `<i class="fa-solid ${icons[gameId]}"></i>`;
+
+            modal.classList.remove('hidden');
+
+            // Render Start Screen
+            area.innerHTML = `
+                <div class="text-center py-8 space-y-4 max-w-md">
+                    <div class="text-5xl text-cyan-400 mb-2">
+                        <i class="fa-solid ${icons[gameId]}"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-white">${titles[gameId]}</h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        최고 기록 도전! 목표 점수를 달성하면 트로피 보관함의 새로운 트로피가 해금됩니다.
+                    </p>
+                    <button onclick="startGame(${gameId})" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg transition-all text-sm">
+                        게임 시작하기
+                    </button>
+                </div>
+            `;
+        }
+
+        function closeGameModal() {
+            playSound('click');
+            if (activeGameTimer) clearInterval(activeGameTimer);
+            document.getElementById('gameModal').classList.add('hidden');
+            // Clean up event listeners
+            window.onkeydown = null;
+        }
+
+        function finishGame(score) {
+            if (activeGameTimer) clearInterval(activeGameTimer);
+            window.onkeydown = null;
+
+            // Update scores
+            appState.totalScore += score;
+            if (score > (appState.highScores[currentGameId] || 0)) {
+                appState.highScores[currentGameId] = score;
+            }
+            saveState();
+
+            const area = document.getElementById('gameArea');
+            area.innerHTML = `
+                <div class="text-center py-6 space-y-4 max-w-md animate-fade-in">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-3xl">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                    </div>
+                    <h4 class="text-2xl font-black text-white">게임 종료!</h4>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+                        <div class="text-sm text-slate-400">획득 점수</div>
+                        <div class="text-3xl font-black text-cyan-400 arcade-font">+${score} 점</div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="startGame(${currentGameId})" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl border border-slate-700 text-sm">
+                            다시하기
+                        </button>
+                        <button onclick="closeGameModal()" class="flex-1 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-sm">
+                            확인
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            playSound('correct');
+            // Real-time trophy check
+            checkTrophyUnlocks();
+        }
+
+        /* --------------------
+         * GAME 1: RANDOM KEYBOARD SPEED TEST
+         * STRICTLY: English (A-Z), Numbers (0-9), Spacebar
+         * -------------------- */
+        function startKeyboardGame() {
+            const keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ".split("");
+            let score = 0;
+            let timeLeft = 20;
+            let currentTarget = "";
+
+            function nextKey() {
+                currentTarget = keys[Math.floor(Math.random() * keys.length)];
+                const displayArea = document.getElementById('kbTarget');
+                if (displayArea) {
+                    displayArea.innerText = currentTarget === " " ? "[ SPACEBAR ]" : currentTarget;
+                }
+            }
+
+            const area = document.getElementById('gameArea');
+            area.innerHTML = `
+                <div class="w-full max-w-md text-center space-y-6">
+                    <div class="flex justify-between items-center text-sm font-mono bg-slate-950 p-3 rounded-xl border border-slate-800">
+                        <span>시간: <span id="kbTime" class="text-amber-400 font-bold">20</span>s</span>
+                        <span>점수: <span id="kbScore" class="text-cyan-400 font-bold">0</span></span>
+                    </div>
+
+                    <div class="py-10 bg-slate-950 rounded-2xl border border-cyan-500/30 shadow-inner">
+                        <p class="text-xs text-slate-500 mb-2 uppercase">Press Key</p>
+                        <div id="kbTarget" class="text-5xl font-black text-cyan-400 arcade-font tracking-widest min-h-[60px] flex items-center justify-center">
+                            -
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-400">영문 대문자, 숫자, 스페이스바 키를 누르세요!</p>
+                </div>
+            `;
+
+            nextKey();
+
+            activeGameTimer = setInterval(() => {
+                timeLeft--;
+                const timeElem = document.getElementById('kbTime');
+                if (timeElem) timeElem.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    finishGame(score * 10);
+                }
+            }, 1000);
+
+            window.onkeydown = (e) => {
+                let pressed = e.key.toUpperCase();
+                if (e.code === "Space") pressed = " ";
+
+                if (pressed === currentTarget) {
+                    score++;
+                    playSound('correct');
+                    document.getElementById('kbScore').innerText = score * 10;
+                    nextKey();
+                } else {
+                    playSound('wrong');
+                }
+            };
+        }
+
+        /* --------------------
+         * GAME 2: CLASSIC SNAKE
+         * -------------------- */
+        function startSnakeGame() {
+            const area = document.getElementById('gameArea');
+            area.innerHTML = `
+                <div class="flex flex-col items-center space-y-3">
+                    <div class="flex justify-between w-full max-w-[280px] text-xs font-mono bg-slate-950 px-3 py-2 rounded-lg border border-slate-800">
+                        <span>점수: <span id="snakeScore" class="text-emerald-400 font-bold">0</span></span>
+                        <span class="text-slate-500">화살표 키 조종</span>
+                    </div>
+                    <canvas id="snakeCanvas" width="280" height="280" class="bg-slate-950 border border-slate-800 rounded-xl"></canvas>
+                    <!-- Touch Controls -->
+                    <div class="grid grid-cols-3 gap-2 w-48">
+                        <div></div>
+                        <button onclick="setSnakeDir(0, -1)" class="p-3 bg-slate-800 active:bg-slate-700 rounded-lg text-center"><i class="fa-solid fa-arrow-up"></i></button>
+                        <div></div>
+                        <button onclick="setSnakeDir(-1, 0)" class="p-3 bg-slate-800 active:bg-slate-700 rounded-lg text-center"><i class="fa-solid fa-arrow-left"></i></button>
+                        <button onclick="setSnakeDir(0, 1)" class="p-3 bg-slate-800 active:bg-slate-700 rounded-lg text-center"><i class="fa-solid fa-arrow-down"></i></button>
+                        <button onclick="setSnakeDir(1, 0)" class="p-3 bg-slate-800 active:bg-slate-700 rounded-lg text-center"><i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            `;
+
+            const canvas = document.getElementById('snakeCanvas');
+            const ctx = canvas.getContext('2d');
+            const grid = 14;
+            const count = 20;
+
+            let snake = [{x: 10, y: 10}];
+            let food = {x: 5, y: 5};
+            let dx = 1, dy = 0;
+            let score = 0;
+
+            window.setSnakeDir = (x, y) => {
+                if ((x === -dx && x !== 0) || (y === -dy && y !== 0)) return;
+                dx = x; dy = y;
+            };
+
+            window.onkeydown = (e) => {
+                if (e.key === 'ArrowUp') setSnakeDir(0, -1);
+                else if (e.key === 'ArrowDown') setSnakeDir(0, 1);
+                else if (e.key === 'ArrowLeft') setSnakeDir(-1, 0);
+                else if (e.key === 'ArrowRight') setSnakeDir(1, 0);
+            };
+
+            activeGameTimer = setInterval(() => {
+                const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+                if (head.x < 0 || head.x >= count || head.y < 0 || head.y >= count) {
+                    finishGame(score * 15);
+                    return;
+                }
+
+                for (let part of snake) {
+                    if (part.x === head.x && part.y === head.y) {
+                        finishGame(score * 15);
+                        return;
+                    }
+                }
+
+                snake.unshift(head);
+
+                if (head.x === food.x && head.y === food.y) {
+                    score++;
+                    playSound('correct');
+                    document.getElementById('snakeScore').innerText = score * 15;
+                    food = {
+                        x: Math.floor(Math.random() * count),
+                        y: Math.floor(Math.random() * count)
+                    };
+                } else {
+                    snake.pop();
+                }
+
+                ctx.fillStyle = '#090D16';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#10B981';
+                snake.forEach(p => ctx.fillRect(p.x * grid, p.y * grid, grid - 1, grid - 1));
+
+                ctx.fillStyle = '#EF4444';
+                ctx.fillRect(food.x * grid, food.y * grid, grid - 1, grid - 1);
+
+            }, 120);
+        }
+
+        /* --------------------
+         * GAME 3: MOVING BALL COUNTER
+         * -------------------- */
+        function startBallGame() {
+            let score = 0;
+            let round = 1;
+
+            function nextRound() {
+                const count = Math.floor(Math.random() * 6) + 3 + round;
+                const area = document.getElementById('gameArea');
+                area.innerHTML = `
+                    <div class="flex flex-col items-center space-y-4 w-full max-w-md">
+                        <div class="flex justify-between w-full text-xs font-mono bg-slate-950 px-3 py-2 rounded-lg border border-slate-800">
+                            <span>라운드: <span class="text-amber-400">${round}</span></span>
+                            <span>점수: <span class="text-amber-400 font-bold">${score}</span></span>
+                        </div>
+                        <canvas id="ballCanvas" width="300" height="200" class="bg-slate-950 border border-slate-800 rounded-xl"></canvas>
+                        <p class="text-xs text-slate-400">움직이는 공의 총 개수는 몇 개일까요?</p>
+                        <div id="ballOptions" class="grid grid-cols-4 gap-2 w-full"></div>
+                    </div>
+                `;
+
+                const canvas = document.getElementById('ballCanvas');
+                const ctx = canvas.getContext('2d');
+                let balls = [];
+
+                for (let i = 0; i < count; i++) {
+                    balls.push({
+                        x: Math.random() * 260 + 20,
+                        y: Math.random() * 160 + 20,
+                        vx: (Math.random() - 0.5) * (3 + round * 0.5),
+                        vy: (Math.random() - 0.5) * (3 + round * 0.5),
+                        r: 8
+                    });
+                }
+
+                if (activeGameTimer) clearInterval(activeGameTimer);
+                activeGameTimer = setInterval(() => {
+                    ctx.fillStyle = '#090D16';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = '#F59E0B';
+                    balls.forEach(b => {
+                        b.x += b.vx;
+                        b.y += b.vy;
+                        if (b.x < b.r || b.x > canvas.width - b.r) b.vx *= -1;
+                        if (b.y < b.r || b.y > canvas.height - b.r) b.vy *= -1;
+
+                        ctx.beginPath();
+                        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }, 30);
+
+                // Options
+                const optsContainer = document.getElementById('ballOptions');
+                let choices = [count];
+                while (choices.length < 4) {
+                    let r = count + (Math.floor(Math.random() * 5) - 2);
+                    if (r > 0 && !choices.includes(r)) choices.push(r);
+                }
+                choices.sort(() => Math.random() - 0.5);
+
+                choices.forEach(ans => {
+                    const btn = document.createElement('button');
+                    btn.className = "py-2 bg-slate-800 hover:bg-amber-500/20 hover:text-amber-300 text-white font-bold rounded-lg border border-slate-700 text-sm transition-all";
+                    btn.innerText = ans;
+                    btn.onclick = () => {
+                        if (ans === count) {
+                            score += round * 20;
+                            round++;
+                            playSound('correct');
+                            nextRound();
+                        } else {
+                            playSound('wrong');
+                            finishGame(score);
+                        }
+                    };
+                    optsContainer.appendChild(btn);
+                });
+            }
+
+            nextRound();
+        }
+
+        /* --------------------
+         * GAME 4: MEMORY MATCH
+         * -------------------- */
+        function startMemoryGame() {
+            const icons = ['fa-ghost', 'fa-dragon', 'fa-gamepad', 'fa-rocket', 'fa-bolt', 'fa-gem'];
+            let cards = [...icons, ...icons].sort(() => Math.random() - 0.5);
+            let flipped = [];
+            let matchedCount = 0;
+            let moves = 0;
+
+            const area = document.getElementById('gameArea');
+            area.innerHTML = `
+                <div class="flex flex-col items-center space-y-4 w-full max-w-sm">
+                    <div class="flex justify-between w-full text-xs font-mono bg-slate-950 px-3 py-2 rounded-lg border border-slate-800">
+                        <span>시도 횟수: <span id="memMoves" class="text-purple-400 font-bold">0</span></span>
+                        <span>맞춘 짝: <span id="memMatched" class="text-purple-400 font-bold">0 / 6</span></span>
+                    </div>
+                    <div id="memGrid" class="grid grid-cols-4 gap-3 w-full"></div>
+                </div>
+            `;
+
+            const grid = document.getElementById('memGrid');
+            cards.forEach((icon, idx) => {
+                const card = document.createElement('button');
+                card.className = "h-16 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center text-2xl text-purple-400 transition-all transform duration-300";
+                card.dataset.icon = icon;
+                card.dataset.index = idx;
+                card.innerHTML = `<i class="fa-solid fa-question text-slate-600 text-lg"></i>`;
+
+                card.onclick = () => {
+                    if (flipped.length < 2 && !card.classList.contains('matched') && !flipped.includes(card)) {
+                        card.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+                        card.classList.add('bg-purple-950/60', 'border-purple-500');
+                        flipped.push(card);
+                        playSound('click');
+
+                        if (flipped.length === 2) {
+                            moves++;
+                            document.getElementById('memMoves').innerText = moves;
+
+                            if (flipped[0].dataset.icon === flipped[1].dataset.icon) {
+                                flipped.forEach(c => c.classList.add('matched', 'opacity-50'));
+                                flipped = [];
+                                matchedCount++;
+                                playSound('correct');
+                                document.getElementById('memMatched').innerText = `${matchedCount} / 6`;
+
+                                if (matchedCount === 6) {
+                                    const finalScore = Math.max(50, 300 - moves * 15);
+                                    setTimeout(() => finishGame(finalScore), 500);
+                                }
+                            } else {
+                                playSound('wrong');
+                                setTimeout(() => {
+                                    flipped.forEach(c => {
+                                        c.innerHTML = `<i class="fa-solid fa-question text-slate-600 text-lg"></i>`;
+                                        c.classList.remove('bg-purple-950/60', 'border-purple-500');
+                                    });
+                                    flipped = [];
+                                }, 800);
+                            }
+                        }
+                    }
+                };
+                grid.appendChild(card);
+            });
+        }
+
+        /* --------------------
+         * GAME 5: REACTION TEST
+         * -------------------- */
+        function startReactionGame() {
+            const area = document.getElementById('gameArea');
+            area.innerHTML = `
+                <div id="reactBox" class="w-full max-w-md h-64 bg-rose-950/50 border border-rose-500/40 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-colors p-4 text-center">
+                    <p id="reactText" class="text-xl font-bold text-rose-300">화면이 초록색으로 변할 때까지 대기하세요...</p>
+                    <p class="text-xs text-slate-400 mt-2">초록색이 되면 재빨리 클릭하세요!</p>
+                </div>
+            `;
+
+            const box = document.getElementById('reactBox');
+            const text = document.getElementById('reactText');
+            let startTime = 0;
+            let state = 'waiting'; // waiting, ready, done
+
+            const randomDelay = Math.floor(Math.random() * 3000) + 2000;
+
+            const timer = setTimeout(() => {
+                if (state === 'waiting') {
+                    state = 'ready';
+                    box.className = "w-full max-w-md h-64 bg-emerald-500 border border-emerald-400 rounded-2xl flex flex-col items-center justify-center cursor-pointer p-4 text-center glow-accent";
+                    text.innerText = "지금 클릭하세요!!!";
+                    text.className = "text-2xl font-black text-slate-950";
+                    startTime = Date.now();
+                }
+            }, randomDelay);
+
+            box.onclick = () => {
+                if (state === 'waiting') {
+                    clearTimeout(timer);
+                    playSound('wrong');
+                    text.innerText = "너무 빨랐습니다! (부정출발)";
+                    setTimeout(() => finishGame(0), 1000);
+                } else if (state === 'ready') {
+                    const reactTime = Date.now() - startTime;
+                    playSound('correct');
+                    let score = Math.max(10, 400 - reactTime);
+                    text.innerText = `반응 속도: ${reactTime} ms!`;
+                    setTimeout(() => finishGame(score), 1000);
+                }
+            };
+        }
+
+        /* --------------------
+         * GAME 6: WHACK-A-MOLE
+         * -------------------- */
+        function startMoleGame() {
+            const area = document.getElementById('gameArea');
+            area.innerHTML = `
+                <div class="flex flex-col items-center space-y-4 w-full max-w-md">
+                    <div class="flex justify-between w-full text-xs font-mono bg-slate-950 px-3 py-2 rounded-lg border border-slate-800">
+                        <span>시간: <span id="moleTime" class="text-amber-400 font-bold">30</span>s</span>
+                        <span>잡은 두더지: <span id="moleScore" class="text-yellow-400 font-bold">0</span></span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 w-full">
+                        ${Array(9).fill(0).map((_, i) => `
+                            <button id="mole-${i}" onclick="hitMole(${i})" class="h-20 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center text-3xl overflow-hidden relative">
+                                <span class="mole-icon hidden transform transition-transform duration-150">🐹</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            let score = 0;
+            let timeLeft = 30;
+            let currentMole = -1;
+
+            window.hitMole = (idx) => {
+                if (idx === currentMole) {
+                    score++;
+                    playSound('correct');
+                    document.getElementById('moleScore').innerText = score * 10;
+                    document.querySelector(`#mole-${idx} .mole-icon`).classList.add('hidden');
+                    currentMole = -1;
+                }
+            };
+
+            function popupMole() {
+                if (currentMole !== -1) {
+                    const old = document.querySelector(`#mole-${currentMole} .mole-icon`);
+                    if (old) old.classList.add('hidden');
+                }
+                currentMole = Math.floor(Math.random() * 9);
+                const elem = document.querySelector(`#mole-${currentMole} .mole-icon`);
+                if (elem) elem.classList.remove('hidden');
+            }
+
+            const moleInterval = setInterval(popupMole, 650);
+
+            activeGameTimer = setInterval(() => {
+                timeLeft--;
+                const tElem = document.getElementById('moleTime');
+                if (tElem) tElem.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(moleInterval);
+                    finishGame(score * 10);
+                }
+            }, 1000);
+        }
+
+        // Master Game Controller Switch
+        function startGame(gameId) {
+            playSound('click');
+            if (gameId === 1) startKeyboardGame();
+            else if (gameId === 2) startSnakeGame();
+            else if (gameId === 3) startBallGame();
+            else if (gameId === 4) startMemoryGame();
+            else if (gameId === 5) startReactionGame();
+            else if (gameId === 6) startMoleGame();
+        }
+
+        /* Initial Setup on Load */
+        window.onload = () => {
+            loadState();
+        };
+    </script>
+</body>
+</html>
